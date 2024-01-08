@@ -382,6 +382,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 5
   focalPointGO: {fileID: 530007315}
+  force: 15
 --- !u!1 &1211016355
 GameObject:
   m_ObjectHideFlags: 0
@@ -780,6 +781,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemies: {fileID: 8016066753762396385, guid: 33b25b15bfd390e4498d11acdd07fa65, type: 3}
+  pawa: {fileID: 5160450597994010465, guid: ff31e1452d425894b9268684582f7071, type: 3}
 --- !u!1001 &7305732181041295649
 PrefabInstance:
   m_ObjectHideFlags: 0
