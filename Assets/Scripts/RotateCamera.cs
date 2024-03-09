@@ -1,34 +1,44 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class RotateCamera : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    private float rotationSpeed = 30f;
+    private float horizontalInput;
+    private bool started = false;
+    private bool gameover = false;
+
+    private GameManager gameManager;
+
+    private void Start()
     {
+        gameManager = FindObjectOfType<GameManager>();
+    }
+
+    private void Update()
+    {
+        if (!started)
+        {
+            started = gameManager.Hasgamestarted();
+        }
+        else if (!gameover)
+        {
+            horizontalInput = Input.GetAxis("Horizontal");
+            transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime * horizontalInput);
+        }
         
     }
 
-    [SerializeField] private float speed= 10f;
-
-    private float rotate;
-
-    // Update is called once per frame
-    void Update()
+    public void Over()
     {
-        rotate = Input.GetAxis("Horizontal");
-        transform.Rotate(-Vector3.up, rotate * speed * Time.deltaTime);
-        /*
-        if (Input.GetKey(KeyCode.A))
-        {
-            transform.Rotate(Vector3.up * speed * Time.deltaTime);
-        }
-        else if (Input.GetKey(KeyCode.D))
-        {
-            transform.Rotate(-Vector3.up * speed * Time.deltaTime);
-        }*/
-
-
+        gameover = true;
     }
+
+    public void Restart()
+    {
+        gameover = false;
+    }
+
 }

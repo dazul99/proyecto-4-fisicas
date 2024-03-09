@@ -1,36 +1,99 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class SpawnManager : MonoBehaviour
 {
-    [SerializeField] private GameObject enemies;
-    [SerializeField] private GameObject pawa;
-    private float ranx;
-    private float ranz;
+    [SerializeField] private GameObject enemyPrefab;
+    [SerializeField] private GameObject powerupPrefab;
 
-    private int stage = 1;
-    private int aux = 0;
+    private float spawnLimit = 8f;
 
-    private void Awake()
-    {
-        Spawn();
-        Spawa();
-    }
+    private int enemiesInScene = 0;
+    private int enemiesPerWave = 1;
 
-    private void Spawn()
+    private PlayerController playerController;
+
+    private bool powerupInScene;
+
+    private GameManager gameManager;
+    private bool started;
+    
+    private void Start()
     {
-        ranx = Random.Range(-8, 8);
-        ranz = Random.Range(-8, 8);
-        Instantiate(enemies, new Vector3(ranx, 0, ranz), Quaternion.identity);
-    }
-    private void Spawa()
-    {
-        Instantiate(pawa, new Vector3(0,0,3), Quaternion.identity);
+        playerController = FindObjectOfType<PlayerController>();
+        gameManager = FindObjectOfType<GameManager>();
+        powerupInScene = false;
+        enemiesPerWave = 0;
     }
 
     private void Update()
     {
-        
+        //enemiesInScene = FindObjectsOfType<Enemy>().Length;
+        if(!started)
+        {
+            started = gameManager.Hasgamestarted();
+        }
+        if (enemiesInScene <= 0 && started)
+        {
+            enemiesPerWave++;
+            if (!playerController.GetIsGameOver())
+            {
+                SpawnEnemyWave(enemiesPerWave);
+            }  
+        }
+    }
+
+    private void SpawnEnemyWave(int enemiesToSpawn)
+    {
+        for (int i = 0; i < enemiesToSpawn; i++)
+        {
+            Instantiate(enemyPrefab, GenerateRandomPosition(), Quaternion.identity);
+            enemiesInScene++;
+        }
+
+        if (!powerupInScene && enemiesToSpawn > 1)
+        {
+            Instantiate(powerupPrefab,
+                GenerateRandomPosition(), 
+                Quaternion.identity);
+
+            powerupInScene = true;
+        }
+    }
+
+    public void PowerupFinished()
+    {
+        powerupInScene = false;
+    }
+
+    public void EnemyDestroyed()
+    {
+        enemiesInScene--;
+    }
+
+    private Vector3 GenerateRandomPosition()
+    {
+        float x = Random.Range(-spawnLimit, spawnLimit);
+        float z = Random.Range(-spawnLimit, spawnLimit);
+
+        return new Vector3(x, 0, z);
+    }
+
+    public void Restart()
+    {
+        powerupInScene = false;
+        enemiesPerWave = 0;
+        enemiesInScene = 0;
+    }
+
+    public bool Thereispowerup()
+    {
+        return powerupInScene;
+    }
+
+    public bool Thereisenemy()
+    {
+        if (enemiesInScene == 0) return false;
+        else return true;
     }
 }

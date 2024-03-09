@@ -1,33 +1,54 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    [SerializeField] private float speed=3f;
-    private Rigidbody rb;
+    private float speed = 1f;
+    private Rigidbody enemyRigidbody;
+    
     private GameObject player;
-    private Vector3 direction;
 
-    void Awake()
+    private float lowerLimit = -3f;
+
+    private SpawnManager spawnManager;
+    private PlayerController playerController;
+    private GameManager gameManager;
+
+    private void Awake()
     {
-        rb = GetComponent<Rigidbody>();
+        enemyRigidbody = GetComponent<Rigidbody>();
     }
 
     private void Start()
     {
         player = GameObject.Find("Player");
+        playerController = player.GetComponent<PlayerController>();
+        spawnManager = FindObjectOfType<SpawnManager>();
+        gameManager = FindObjectOfType<GameManager>();
     }
 
-    void Update()
+    private void Update()
     {
-        direction = player.transform.position - transform.position;
-        direction = Vector3.Normalize(direction);
-        rb.AddForce(direction*speed);
-
-        if (transform.position.y < -3)
+        if (!playerController.GetIsGameOver())
         {
+            GoToPlayer();
+        }
+
+        if (transform.position.y < lowerLimit)
+        {
+            gameManager.defeated++;
+            spawnManager.EnemyDestroyed();
             Destroy(gameObject);
         }
+    }
+
+    private void GoToPlayer()
+    {
+        // Direction = destino - origen
+        // destino = posición del player
+        // origen = posición del enemigo
+        Vector3 direction = player.transform.position -
+                            transform.position;
+        direction = direction.normalized;
+        enemyRigidbody.AddForce(direction * speed);
     }
 }

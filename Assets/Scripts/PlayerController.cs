@@ -1,54 +1,167 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController: MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
-    private Rigidbody rigid;
-    [SerializeField] private float speed = 10f;
+    private Rigidbody playerRigidbody;
+    private float speed = 4f;
     private float forwardInput;
-    private bool power = false;
-    [SerializeField] private GameObject focalPointGO;
 
-    [SerializeField] private float force = 20f;
+    private SpawnManager spawn;
+    [SerializeField] private GameObject focalPointGameObject;
 
+    public bool hasPowerup;
+    private float powerupForce = 30f;
+
+    [SerializeField] private GameObject[] powerupIndicators;
+
+    private int lives;
+    private float lowerLimit = -3f;
+    private bool isGameOver;
+    private Vector3 initialPosition;
+
+    private bool gamestart = false;
+
+    private GameManager gameManager;
 
     private void Awake()
     {
-        rigid = GetComponent<Rigidbody>();
+        gameManager = FindObjectOfType<GameManager>();
+        playerRigidbody = GetComponent<Rigidbody>();
+        
+        hasPowerup = false;
+        initialPosition = Vector3.zero;
+        lives = 3;
+        isGameOver = false;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Start()
     {
-        forwardInput = Input.GetAxis("Vertical");
-        rigid.AddForce(focalPointGO.transform.forward * speed * forwardInput);
+        spawn = FindObjectOfType<SpawnManager>();
+        HideAllPowerupIndicators();
+    }
 
+    private void Update()
+    {
+        if (isGameOver)
+        {
+            return;
+        }
+
+        
+
+        if(gamestart)
+        {
+            Movement();
+        }
+        else gamestart = gameManager.Hasgamestarted();
+
+        if (transform.position.y < lowerLimit)
+        {
+            lives--;
+            if (lives <= 0)
+            {
+                //GAME OVER
+                isGameOver = true;
+                gameManager.Gameover();
+            }
+            else
+            {
+                // Puedo seguir jugando
+                transform.position = initialPosition;
+                playerRigidbody.velocity = Vector3.zero;
+                StartCoroutine(InvulnerabilityCountdown());
+            }
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("Power"))
+        if (other.gameObject.CompareTag("Powerup"))
         {
-            power = true;
-            StartCoroutine(PowerupCount());
+            hasPowerup = true;
+            StartCoroutine(PowerupCountdown());
             Destroy(other.gameObject);
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnCollisionEnter(Collision other)
     {
-        if (collision.gameObject.CompareTag("Enemy") && power)
+        if (other.gameObject.CompareTag("Enemy") && hasPowerup)
         {
-            Rigidbody enemyrigid = collision.gameObject.GetComponent<Rigidbody>();
-            Vector3 direct = collision.gameObject.transform.position - transform.position;
-            enemyrigid.AddForce(direct.normalized * force, ForceMode.Impulse);
+            // El enemigo sufre un empujón alejándolo del player
+            Rigidbody enemyRigidbody = other.gameObject.
+                GetComponent<Rigidbody>();
+            
+            Vector3 direction = (other.transform.position -
+                                 transform.position).normalized;
+            
+            enemyRigidbody.AddForce(direction * powerupForce,
+                ForceMode.Impulse);
         }
     }
 
-    private IEnumerator PowerupCount()
+    private void Movement()
     {
-        yield return new WaitForSeconds(6);
-        power = false;
+        forwardInput = Input.GetAxis("Vertical");
+        
+        playerRigidbody.AddForce(focalPointGameObject.transform.forward * 
+                                 speed * forwardInput);
+        
+        // SI QUEREMOS QUE EL PLAYER FRENE CUANDO NO PULSAMOS VERTICAL INPUT
+        // // forwardInput > -0.01f && forwardInput < 0.01f
+        // if (Mathf.Abs(forwardInput) < 0.01f)
+        // {
+        //     playerRigidbody.velocity = Vector3.zero;
+        // }
+        // else
+        // {
+        //     playerRigidbody.AddForce(focalPointGameObject.transform.forward * 
+        //                              speed * forwardInput);
+        // }
+    }
+
+    private IEnumerator PowerupCountdown()
+    {
+        for (int i = 0; i < powerupIndicators.Length; i++)
+        {
+            powerupIndicators[i].SetActive(true);
+            yield return new WaitForSeconds(2);
+            powerupIndicators[i].SetActive(false);
+        }
+    
+        hasPowerup = false;
+        spawn.PowerupFinished();
+    }
+
+    private IEnumerator InvulnerabilityCountdown()
+    {
+        playerRigidbody.constraints = RigidbodyConstraints.FreezePosition |
+            RigidbodyConstraints.FreezeRotation;
+        yield return new WaitForSeconds(0.5f);
+        playerRigidbody.constraints = RigidbodyConstraints.None;
+    }
+
+    private void HideAllPowerupIndicators()
+    {
+        foreach (GameObject indicator in powerupIndicators)
+        {
+            indicator.SetActive(false);
+        }
+    }
+
+    public bool GetIsGameOver()
+    {
+        return isGameOver;
+    }
+
+    public void Restart()
+    {
+        isGameOver = false;
+        lives = 3;
+        transform.position = initialPosition;
+        playerRigidbody.velocity = Vector3.zero;
+        StartCoroutine(InvulnerabilityCountdown());
     }
 }
