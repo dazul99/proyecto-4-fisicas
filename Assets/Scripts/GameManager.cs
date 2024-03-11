@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,7 +18,7 @@ public class GameManager : MonoBehaviour
     private SpawnManager spawnManager;
 
     private PowerUp power;
-    private Enemy enemy;
+    private GameObject[] enemies;
     private bool paused = false;
     public int defeated = 0;
 
@@ -59,10 +60,7 @@ public class GameManager : MonoBehaviour
         {
             DestroyPowerUp();
         }
-        while (spawnManager.Thereisenemy())
-        {
             Destroyenemy();
-        }
         spawnManager.Restart();
     }
 
@@ -74,9 +72,12 @@ public class GameManager : MonoBehaviour
 
     private void Destroyenemy()
     {
-        enemy = FindObjectOfType<Enemy>();
-        Destroy(enemy.gameObject);
-        spawnManager.EnemyDestroyed();
+        enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            Destroy(enemies[i]);
+            spawnManager.EnemyDestroyed();
+        }
     }
 
     public void ReturnMainMenu()
