@@ -19,6 +19,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button menu;
     [SerializeField] private Button restartover;
 
+    [SerializeField] private Button load;
+    [SerializeField] private Button save;
+
     private GameManager gameManager;
 
     [SerializeField] private TextMeshProUGUI defeat;
@@ -32,6 +35,8 @@ public class UIManager : MonoBehaviour
         menu.onClick.AddListener(gameManager.ReturnMainMenu);
         restartpause.onClick.AddListener(gameManager.Restart);
         resume.onClick.AddListener(gameManager.Unpause);
+        load.onClick.AddListener(gameManager.Loadgame);
+        save.onClick.AddListener(gameManager.Savegame);
     }
 
     private void Hidepause()

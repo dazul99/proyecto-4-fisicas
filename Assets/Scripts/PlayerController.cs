@@ -164,4 +164,27 @@ public class PlayerController : MonoBehaviour
         playerRigidbody.velocity = Vector3.zero;
         StartCoroutine(InvulnerabilityCountdown());
     }
+
+    public void SetLives(int x)
+    {
+        lives = x;
+    }
+
+    public int GetLives()
+    {
+        return lives;
+    }
+
+    public void SetPower(bool x)
+    {
+        hasPowerup = x;
+
+        if (x) StartCoroutine(PowerupCountdown());
+    }
+
+    public bool GetPower()
+    {
+        return hasPowerup;
+    }
+
 }
