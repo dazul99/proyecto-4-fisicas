@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,11 +18,9 @@ public class GameManager : MonoBehaviour
     private SpawnManager spawnManager;
 
     private PowerUp power;
-    private Enemy enemy;
+    private GameObject[] enemies;
     private bool paused = false;
     public int defeated = 0;
-
-    private DataPersistency persistency;
 
     void Start()
     {
@@ -29,7 +28,6 @@ public class GameManager : MonoBehaviour
         rotateCamera = FindObjectOfType<RotateCamera>();
         playerController = FindObjectOfType<PlayerController>();
         spawnManager = FindObjectOfType<SpawnManager>();
-        persistency = FindObjectOfType<DataPersistency>();
         ui.Gotomenu();
     }
 
@@ -42,25 +40,6 @@ public class GameManager : MonoBehaviour
     {
         gamestarted = true;
         ui.Gamestart();
-        Time.timeScale = 1.0f;
-    }
-
-    public void Startgame(int x)
-    {
-        gamestarted = true;
-        ui.Gamestart();
-        spawnManager.SetEnemies(x);
-        Time.timeScale = 1.0f;
-    }
-
-    public void Loadgame()
-    {
-        persistency.Load();
-    }
-    public void Savegame()
-    {
-        persistency.Save();
-        ReturnMainMenu();
     }
 
     public void Gameover()
@@ -81,14 +60,7 @@ public class GameManager : MonoBehaviour
         {
             DestroyPowerUp();
         }
-        while (spawnManager.Thereisenemy())
-        {
             Destroyenemy();
-        }
-        while (spawnManager.Thereisenemy()) ;
-        {
-            spawnManager.EnemyDestroyed();
-        }
         spawnManager.Restart();
     }
 
@@ -100,9 +72,12 @@ public class GameManager : MonoBehaviour
 
     private void Destroyenemy()
     {
-        enemy = FindObjectOfType<Enemy>();
-        Destroy(enemy.gameObject);
-        spawnManager.EnemyDestroyed();
+        enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        for (int i = 0; i < enemies.Length; i++)
+        {
+            Destroy(enemies[i]);
+            spawnManager.EnemyDestroyed();
+        }
     }
 
     public void ReturnMainMenu()
@@ -137,11 +112,6 @@ public class GameManager : MonoBehaviour
         paused = false;
         Time.timeScale = 1;
         ui.Resume();
-    }
-
-    public int GetRound()
-    {
-        return spawnManager.GetEnemies();
     }
 
 }

@@ -97,14 +97,5 @@ public class SpawnManager : MonoBehaviour
         else return true;
     }
 
-    public void SetEnemies(int x)
-    {
-        enemiesPerWave = x-1;
-    }
-
-    public int GetEnemies()
-    {
-        return enemiesPerWave;
-    }
 
 }
